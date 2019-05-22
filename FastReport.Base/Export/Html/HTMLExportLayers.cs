@@ -143,8 +143,14 @@ namespace FastReport.Export.Html
                 float borderBottom = 0;
                 HTMLBorderWidthValues(obj, out borderLeft, out borderTop, out borderRight, out borderBottom);
 
+                string href = GetHref(obj);
+
+                if (!string.IsNullOrEmpty(href))
+                {
+                    Page.Append(href);
+                }
                 Page.Append("<div ").Append(style).Append(" style=\"").
-                    Append(onclick != null ? "cursor:pointer;" : "").
+                    Append(onclick != null || !string.IsNullOrEmpty(href) ? "cursor:pointer;" : "").
                     Append("left:").Append(Px((leftMargin + Left) * Zoom - borderLeft / 2f)).
                     Append("top:").Append(Px((topMargin + Top) * Zoom - borderTop / 2f)).
                     Append("width:").Append(Px(Width * Zoom - borderRight / 2f - borderLeft / 2f)).
@@ -174,6 +180,10 @@ namespace FastReport.Export.Html
                 else
                     Page.Append(Text);
                 Page.AppendLine("</div>");
+                if (!string.IsNullOrEmpty(href))
+                {
+                    Page.Append("</a>");
+                }
             }
         }
 
@@ -186,35 +196,9 @@ namespace FastReport.Export.Html
 #endif
         }
 
-        private FastString GetSpanText(TextObjectBase obj, FastString text,
-            float top, float width,
-            float ParagraphOffset)
+        private string GetHref(ReportComponentBase obj)
         {
-            FastString style = new FastString();
-            style.Append("display:block;border:0;width:").Append(Px(width * Zoom));
-            if (ParagraphOffset != 0)
-                style.Append("text-indent:").Append(Px(ParagraphOffset * Zoom));
-            if (obj.Padding.Left != 0)
-                style.Append("padding-left:").Append(Px((obj.Padding.Left) * Zoom));
-            if (obj.Padding.Right != 0)
-                style.Append("padding-right:").Append(Px(obj.Padding.Right * Zoom));
-            if (top != 0)
-                style.Append("margin-top:").Append(Px(top * Zoom));
-
-            // we need to apply border width in order to position our div perfectly
-            float borderLeft = 0;
-            float borderRight = 0;
-            float borderTop = 0;
-            float borderBottom = 0;
-            if (HTMLBorderWidthValues(obj, out borderLeft, out borderTop, out borderRight, out borderBottom))
-            {
-                style.Append("position:absolute;")
-                    .Append("left:").Append(Px(-1 * borderLeft / 2f))
-                    .Append("top:").Append(Px(-1 * borderTop / 2f));
-            }
-
             string href = String.Empty;
-
             if (!String.IsNullOrEmpty(obj.Hyperlink.Value))
             {
                 string hrefStyle = String.Empty;
@@ -228,7 +212,7 @@ namespace FastReport.Export.Html
                 }
                 string url = EncodeURL(obj.Hyperlink.Value);
                 if (obj.Hyperlink.Kind == HyperlinkKind.URL)
-                    href = String.Format("<a {0} href=\"{1}\"" + (obj.Hyperlink.OpenLinkInNewTab ? "target=\"_blank\"" : "") + ">", hrefStyle, obj.Hyperlink.Value);                   
+                    href = String.Format("<a {0} href=\"{1}\"" + (obj.Hyperlink.OpenLinkInNewTab ? "target=\"_blank\"" : "") + ">", hrefStyle, obj.Hyperlink.Value);
                 else if (obj.Hyperlink.Kind == HyperlinkKind.DetailReport)
                 {
                     url = String.Format("{0},{1},{2}",
@@ -266,6 +250,37 @@ namespace FastReport.Export.Html
                         href = String.Format("<a {0} href=\"#\" onclick=\"{1}\">", hrefStyle, onClick);
                 }
             }
+            return href;
+        }
+
+        private FastString GetSpanText(TextObjectBase obj, FastString text,
+            float top, float width,
+            float ParagraphOffset)
+        {
+            FastString style = new FastString();
+            style.Append("display:block;border:0;width:").Append(Px(width * Zoom));
+            if (ParagraphOffset != 0)
+                style.Append("text-indent:").Append(Px(ParagraphOffset * Zoom));
+            if (obj.Padding.Left != 0)
+                style.Append("padding-left:").Append(Px((obj.Padding.Left) * Zoom));
+            if (obj.Padding.Right != 0)
+                style.Append("padding-right:").Append(Px(obj.Padding.Right * Zoom));
+            if (top != 0)
+                style.Append("margin-top:").Append(Px(top * Zoom));
+
+            // we need to apply border width in order to position our div perfectly
+            float borderLeft = 0;
+            float borderRight = 0;
+            float borderTop = 0;
+            float borderBottom = 0;
+            if (HTMLBorderWidthValues(obj, out borderLeft, out borderTop, out borderRight, out borderBottom))
+            {
+                style.Append("position:absolute;")
+                    .Append("left:").Append(Px(-1 * borderLeft / 2f))
+                    .Append("top:").Append(Px(-1 * borderTop / 2f));
+            }
+
+            string href = GetHref(obj);
 
             FastString result = new FastString(128);
             result.Append("<div ").
@@ -284,24 +299,24 @@ namespace FastReport.Export.Html
                 case TextRenderType.HtmlParagraph:
 
 
-                    HtmlTextRenderer htmlTextRenderer = obj.GetHtmlTextRenderer(Zoom, Zoom);
-
-
-                    if (obj.VertAlign == VertAlign.Center)
+                    using (HtmlTextRenderer htmlTextRenderer = obj.GetHtmlTextRenderer(Zoom, Zoom))
                     {
-                        top = (obj.Height - htmlTextRenderer.CalcHeight()) / 2;
-                    }
-                    else if(obj.VertAlign == VertAlign.Bottom)
-                    {
-                        top = obj.Height - htmlTextRenderer.CalcHeight();
-                    }
-                    FastString sb = GetHtmlParagraph(htmlTextRenderer);
+                        if (obj.VertAlign == VertAlign.Center)
+                        {
+                            top = (obj.Height - htmlTextRenderer.CalcHeight()) / 2;
+                        }
+                        else if (obj.VertAlign == VertAlign.Bottom)
+                        {
+                            top = obj.Height - htmlTextRenderer.CalcHeight();
+                        }
+                        FastString sb = GetHtmlParagraph(htmlTextRenderer);
 
-                    LayerBack(Page, obj,
-                    GetSpanText(obj, sb,
-                    top + obj.Padding.Top,
-                    obj.Width - obj.Padding.Horizontal,
-                    obj.ParagraphOffset));
+                        LayerBack(Page, obj,
+                        GetSpanText(obj, sb,
+                        top + obj.Padding.Top,
+                        obj.Width - obj.Padding.Horizontal,
+                        obj.ParagraphOffset));
+                    }
                     break;
                 default:
                     if (obj.VertAlign != VertAlign.Top)
@@ -693,7 +708,7 @@ namespace FastReport.Export.Html
             }
         }
 
-        private void ExportHTMLPageLayeredBegin(HTMLThreadData d)
+        private void ExportHTMLPageLayeredBegin(HTMLData d)
         {
             if (!singlePage && !WebMode)
                 cssStyles.Clear();
@@ -754,7 +769,7 @@ namespace FastReport.Export.Html
             }
         }
 
-        private void ExportHTMLPageLayeredEnd(HTMLThreadData d)
+        private void ExportHTMLPageLayeredEnd(HTMLData d)
         {
             // to do
             if (d.page.Watermark.Enabled && d.page.Watermark.ShowImageOnTop)
@@ -767,13 +782,9 @@ namespace FastReport.Export.Html
 
             if (singlePage)
             {
-                //if (!WebMode)
-                //    FHPos += MaxHeight;
-                //else
                 hPos = 0;
                 prevStyleListIndex = cssStyles.Count;
             }
-
             htmlPage.Append("</div>");
 
             ExportHTMLPageFinal(css, htmlPage, d, maxWidth, maxHeight);
@@ -855,7 +866,9 @@ namespace FastReport.Export.Html
                         {
                             LayerPicture(htmlPage, obj, null);
                         }
-                        else if (obj is ShapeObject && ((obj as ShapeObject).Shape == ShapeKind.Rectangle || (obj as ShapeObject).Shape == ShapeKind.RoundRectangle))
+                        else if (obj is ShapeObject && ((obj as ShapeObject).Shape == ShapeKind.Rectangle ||
+                             (obj as ShapeObject).Shape == ShapeKind.RoundRectangle) &&
+                            !((obj as ShapeObject).Fill is TextureFill))
                         {
                             LayerShape(htmlPage, obj as ShapeObject, null);
                         }

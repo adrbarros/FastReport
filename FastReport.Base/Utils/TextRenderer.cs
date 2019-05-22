@@ -44,7 +44,7 @@ namespace FastReport.Utils
   /// }
   /// </code>
   /// </example>
-  internal class AdvancedTextRenderer
+  public class AdvancedTextRenderer
   {
     #region Fields
     private List<Paragraph> paragraphs;
@@ -161,10 +161,11 @@ namespace FastReport.Utils
     {
       get
       {
+        // re fix tab offset #2823 sorry linux users, on linux firstTab is firstTab not tabSizes[0]
         float firstTab = 0;
         float[] tabSizes = Format.GetTabStops(out firstTab);
-        if (tabSizes.Length > 0)
-          return tabSizes[0];
+        if (tabSizes.Length > 1)
+          return tabSizes[1];
         return 0;
       }
     }
@@ -173,9 +174,12 @@ namespace FastReport.Utils
     {
       get
       {
+        // re fix tab offset #2823 sorry linux users, on linux firstTab is firstTab not tabSizes[0]
         float firstTab = 0;
         float[] tabSizes = Format.GetTabStops(out firstTab);
-        return firstTab;
+        if (tabSizes.Length > 0)
+          return tabSizes[0];
+        return 0;
       }
     }
 
@@ -254,7 +258,7 @@ namespace FastReport.Utils
       // skip empty paragraphs at the end
       for (int i = paragraphs.Count - 1; i >= 0; i--)
       {
-        if (paragraphs[i].IsEmpty)
+        if (paragraphs[i].IsEmpty && paragraphs.Count != 1)
           paragraphs.RemoveAt(i);
         else
           break;
@@ -475,7 +479,7 @@ namespace FastReport.Utils
     /// <summary>
     /// Paragraph represents single paragraph. It consists of one or several <see cref="Lines"/>.
     /// </summary>
-    internal class Paragraph
+    public class Paragraph
     {
       #region Fields
       private List<Line> lines;
@@ -519,12 +523,16 @@ namespace FastReport.Utils
                     // BEGIN: The fix for linux and core app a264aae5-193b-4e5c-955c-0818de3ca01b
                     float left = 0;
                     int tabFit = 0;
-                    while (text[0] == '\t')
+                    while (text.Length > 0 && text[0] == '\t')
                     {
                         left = Renderer.GetTabPosition(left);
                         text = text.Substring(1);
+                        if (Renderer.DisplayRect.Width < left)
+                            return tabFit;
                         tabFit++;
                     }
+                    if (tabFit > 0 && Renderer.DisplayRect.Width < left)
+                        return tabFit;
                     int charsFit = 0;
                     int linesFit = 0;
                     // END: The fix for linux and core app a264aae5-193b-4e5c-955c-0818de3ca01b
@@ -555,9 +563,18 @@ namespace FastReport.Utils
           while (text.Length > 0)
           {
             charsFit = MeasureString(text);
+
+            // avoid infinite loop when width of object less than width of one character
+            if (charsFit == 0)
+            {
+                break;
+            }
+
             string textFit = text.Substring(0, charsFit).TrimEnd(new char[] { ' ' });
             lines.Add(new Line(textFit, this, originalCharIndex));
-            text = text.Substring(charsFit);
+            text = text.Substring(charsFit)
+                            // Fix for linux system
+                            .TrimStart(' ');
             originalCharIndex += charsFit;
           }
         }
@@ -1086,7 +1103,7 @@ namespace FastReport.Utils
     /// Simple line (that does not contain tabs, html tags, and is not justified) has
     /// single <see cref="Word"/> which contains all the text.
     /// </summary>
-    internal class Line
+    public class Line
     {
       #region Fields
       private List<Word> words;
@@ -1333,7 +1350,7 @@ namespace FastReport.Utils
         }
       }
 
-      internal float CalcHeight()
+      public float CalcHeight()
       {
         float height = -1;
         foreach (Word word in Words)
@@ -1417,7 +1434,7 @@ namespace FastReport.Utils
     /// Word represents single word. It may consist of one or several <see cref="Runs"/>, in case
     /// when HtmlTags are enabled in the main <see cref="AdvancedTextRenderer"/> class.
     /// </summary>
-    internal class Word
+    public class Word
     {
       #region Fields
       private List<Run> runs;
@@ -1621,7 +1638,7 @@ namespace FastReport.Utils
     /// <summary>
     /// Represents character placement.
     /// </summary>
-    internal enum BaseLine
+    public enum BaseLine
     {
       Normal,
       Subscript,
@@ -1632,7 +1649,7 @@ namespace FastReport.Utils
     /// <summary>
     /// Represents a style used in HtmlTags mode.
     /// </summary>
-    internal class StyleDescriptor
+    public class StyleDescriptor
     {
       #region Fields
       private FontStyle fontStyle;
@@ -1719,7 +1736,7 @@ namespace FastReport.Utils
     /// <summary>
     /// Represents sequence of characters that have the same <see cref="Style"/>.
     /// </summary>
-    internal class Run
+    public class Run
     {
 #region Fields
       protected string text;

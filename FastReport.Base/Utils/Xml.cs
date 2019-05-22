@@ -234,6 +234,7 @@ namespace FastReport.Utils
         /// <returns>The node with specified name, if found; the new node otherwise.</returns>
         /// <remarks>
         /// This method adds the node with specified name to the child nodes if it cannot find the node.
+        /// Do not dispose items, which has been created by this method
         /// </remarks>
         public XmlItem FindItem(string name)
         {
@@ -838,10 +839,12 @@ namespace FastReport.Utils
 
         private void ReadHeader()
         {
-            XmlItem item = new XmlItem();
-            ReadItem(item);
-            if (item.Name.IndexOf("?xml") != 0)
-                RaiseException();
+            using (XmlItem item = new XmlItem())
+            {
+                ReadItem(item);
+                if (item.Name.IndexOf("?xml") != 0)
+                    RaiseException();
+            }
         }
 
         public void Read(XmlItem item)

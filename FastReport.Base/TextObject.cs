@@ -95,7 +95,7 @@ namespace FastReport
         /// </summary>
         [Browsable(true)]
         [DefaultValue(0f)]
-        [TypeConverterAttribute("FastReport.TypeConverters.UnitsConverter, FastReport")]
+        [TypeConverter("FastReport.TypeConverters.UnitsConverter, FastReport")]
         public float FirstLineIndent
         {
             get { return firstLineIndent; }
@@ -107,7 +107,7 @@ namespace FastReport
         /// </summary>
         [Browsable(true)]
         [DefaultValue(0f)]
-        [TypeConverterAttribute("FastReport.TypeConverters.UnitsConverter, FastReport")]
+        [TypeConverter("FastReport.TypeConverters.UnitsConverter, FastReport")]
         public float LineSpacing
         {
             get { return lineSpacing; }
@@ -146,9 +146,6 @@ namespace FastReport
             get { return skipFirstLineIndent; }
             set { skipFirstLineIndent = value; }
         }
-
-
-
 
         /// <summary>
         /// clone with new scale;
@@ -278,7 +275,7 @@ namespace FastReport
         public ParagraphFormat ParagraphFormat
         {
             get { return paragraphFormat; }
-            set { ParagraphFormat = value; }
+            set { paragraphFormat = value; }
         }
 
         /// <summary>
@@ -505,7 +502,7 @@ namespace FastReport
         /// </summary>
         [DefaultValue(0f)]
         [Category("Appearance")]
-        [TypeConverterAttribute("FastReport.TypeConverters.UnitsConverter, FastReport")]
+        [TypeConverter("FastReport.TypeConverters.UnitsConverter, FastReport")]
         public float FirstTabOffset
         {
             get { return firstTabOffset; }
@@ -644,11 +641,11 @@ namespace FastReport
 
 
         /// <summary>
-        /// Gets or sets the paragraph offset, in pixels.
+        /// Gets or sets the paragraph offset, in pixels. For HtmlParagraph use ParagraphFormat.FirstLineIndent.
         /// </summary>
         [DefaultValue(0f)]
         [Category("Appearance")]
-        [TypeConverterAttribute("FastReport.TypeConverters.UnitsConverter, FastReport")]
+        [TypeConverter("FastReport.TypeConverters.UnitsConverter, FastReport")]
         public float ParagraphOffset
         {
             get { return paragraphOffset; }
@@ -737,14 +734,16 @@ namespace FastReport
                     if (width == 0)
                         width = 100000;
 
-                    HtmlTextRenderer htmlRenderer = GetHtmlTextRenderer(g, new RectangleF(0, 0, width, 100000), 1, 1);
-                    float height = htmlRenderer.CalcHeight();
-                    width = htmlRenderer.CalcWidth();
+                    using (HtmlTextRenderer htmlRenderer = GetHtmlTextRenderer(g, new RectangleF(0, 0, width, 100000), 1, 1))
+                    {
+                        float height = htmlRenderer.CalcHeight();
+                        width = htmlRenderer.CalcWidth();
 
-                    width += Padding.Horizontal + 1;
-                    if (LineHeight == 0)
-                        height += Padding.Vertical + 1;
-                    return new SizeF(width, height);
+                        width += Padding.Horizontal + 1;
+                        if (LineHeight == 0)
+                            height += Padding.Vertical + 1;
+                        return new SizeF(width, height);
+                    }
                 }
 #if !NETSTANDARD2_0
                 if (IsAdvancedRendererNeeded)
@@ -786,9 +785,19 @@ namespace FastReport
         {
             bool saveWordWrap = WordWrap;
             WordWrap = false;
-            SizeF size = CalcSize();
-            WordWrap = saveWordWrap;
-            return size.Width;
+            float result = 0;
+
+            try
+            {
+                SizeF size = CalcSize();
+                result = size.Width;
+            }
+            finally
+            {
+                WordWrap = saveWordWrap;
+            }
+
+            return result;
         }
 
         private float InternalCalcHeight()
@@ -820,18 +829,20 @@ namespace FastReport
 
             try
             {
-                HtmlTextRenderer htmlRenderer = GetHtmlTextRenderer(g, 1, 1, textRect, format);
-                htmlRenderer.CalcHeight(out charactersFitted);
-                if (charactersFitted == 0)
-                    return null;
-
-                Text = HtmlTextRenderer.BreakHtml(Text, charactersFitted, out result, out endOnEnter);
-
-                if (HorzAlign == HorzAlign.Justify && !endOnEnter && result != "")
+                using (HtmlTextRenderer htmlRenderer = GetHtmlTextRenderer(g, 1, 1, textRect, format))
                 {
-                    if (Text.EndsWith(" "))
-                        Text = Text.TrimEnd(' ');
-                    ForceJustify = true;
+                    htmlRenderer.CalcHeight(out charactersFitted);
+                    if (charactersFitted == 0)
+                        return null;
+
+                    Text = HtmlTextRenderer.BreakHtml(Text, charactersFitted, out result, out endOnEnter);
+
+                    if (HorzAlign == HorzAlign.Justify && !endOnEnter && result != "")
+                    {
+                        if (Text.EndsWith(" "))
+                            Text = Text.TrimEnd(' ');
+                        ForceJustify = true;
+                    }
                 }
             }
             finally
@@ -947,6 +958,7 @@ namespace FastReport
 
         private string MakeParagraphOffset(string text)
         {
+            // fixed issue 2823
             FirstTabOffset = ParagraphOffset;
             string[] lines = text.Split(new char[] { '\n' });
             for (int i = 0; i < lines.Length; i++)
@@ -972,7 +984,7 @@ namespace FastReport
         #endregion
 
         #region Public Methods
-        internal StringFormat GetStringFormat(GraphicCache cache, StringFormatFlags flags)
+        public StringFormat GetStringFormat(GraphicCache cache, StringFormatFlags flags)
         {
             return GetStringFormat(cache, flags, 1);
         }
@@ -1058,9 +1070,15 @@ namespace FastReport
 
         internal HtmlTextRenderer GetHtmlTextRenderer(Graphics g, float scale, float fontScale, RectangleF textRect, StringFormat format)
         {
+            return GetHtmlTextRenderer(g, fontScale, scale, fontScale, textRect, format);
+        }
+
+
+        internal HtmlTextRenderer GetHtmlTextRenderer(Graphics g, float formatScale, float scale, float fontScale, RectangleF textRect, StringFormat format)
+        {
             return new HtmlTextRenderer(Text, g, font.Name, font.Size, font.Style, TextColor,
                       textOutline.Color, textRect, Underlines,
-                      format, horzAlign, vertAlign, ParagraphFormat.MultipleScale(fontScale), ForceJustify,
+                      format, horzAlign, vertAlign, ParagraphFormat.MultipleScale(formatScale), ForceJustify,
                       scale * 96f / DrawUtils.ScreenDpi, fontScale * 96f / DrawUtils.ScreenDpi, InlineImageCache
                       );
         }
@@ -1093,7 +1111,7 @@ namespace FastReport
                 if (TextFill is SolidFill)
                     textBrush = e.Cache.GetBrush((TextFill as SolidFill).Color);
                 else
-                    textBrush = TextFill.CreateBrush(textRect);
+                    textBrush = TextFill.CreateBrush(textRect, e.ScaleX, e.ScaleY);
 
                 Pen outlinePen = null;
                 if (textOutline.Enabled)
@@ -1108,21 +1126,30 @@ namespace FastReport
                     switch (TextRenderType)
                     {
                         case TextRenderType.HtmlParagraph:
+                            try
                             {
-                                HtmlTextRenderer renderer = GetHtmlTextRenderer(e.Graphics, e.ScaleX, IsPrinting ? 1 : e.ScaleX, textRect, format);
-
-                                renderer.Draw();
+                                using (HtmlTextRenderer htmlRenderer = GetHtmlTextRenderer(e.Graphics, e.ScaleX,
+                                    IsPrinting ? 1 : e.ScaleX, IsPrinting ? 1 : e.ScaleX, textRect, format))
+                                {
+                                    htmlRenderer.Draw();
+                                }
+                            }
+                            catch
+                            {
+                                textBrush.Dispose();
+                                textBrush = null;
                             }
                             break;
                         default:
                             if (IsAdvancedRendererNeeded)
                             {
                                 // use advanced rendering
-                                AdvancedTextRenderer renderer = new AdvancedTextRenderer(text, g, font, textBrush, outlinePen,
-                                  textRect, format, HorzAlign, VertAlign, LineHeight * e.ScaleY, Angle, FontWidthRatio,
-                                  ForceJustify, Wysiwyg, HasHtmlTags, false, e.ScaleX * 96f / DrawUtils.ScreenDpi, IsPrinting ? 1 : e.ScaleX * 96f / DrawUtils.ScreenDpi,
-                                  InlineImageCache);
-                                renderer.Draw();
+                                AdvancedTextRenderer advancedRenderer = new AdvancedTextRenderer(text, g, font, textBrush,
+                                    outlinePen, textRect, format, HorzAlign, VertAlign, LineHeight * e.ScaleY, Angle,
+                                    FontWidthRatio, ForceJustify, Wysiwyg, HasHtmlTags, false,
+                                    e.ScaleX * 96f / DrawUtils.ScreenDpi,
+                                    IsPrinting ? 1 : e.ScaleX * 96f / DrawUtils.ScreenDpi, InlineImageCache);
+                                advancedRenderer.Draw();
                             }
                             else
                             {
@@ -1136,7 +1163,8 @@ namespace FastReport
                                     else
                                     {
                                         GraphicsPath path = new GraphicsPath();
-                                        path.AddString(text, font.FontFamily, Convert.ToInt32(font.Style), g.DpiY * font.Size / 72, textRect, format);
+                                        path.AddString(text, font.FontFamily, Convert.ToInt32(font.Style),
+                                            g.DpiY * font.Size / 72, textRect, format);
 
                                         GraphicsState state = g.Save();
                                         g.SetClip(textRect);
@@ -1159,7 +1187,8 @@ namespace FastReport
                                     }
                                 }
                                 else
-                                    StandardTextRenderer.Draw(text, g, font, textBrush, outlinePen, textRect, format, Angle, FontWidthRatio);
+                                    StandardTextRenderer.Draw(text, g, font, textBrush, outlinePen, textRect, format, Angle,
+                                        FontWidthRatio);
 
                             }
                             DrawUnderlines(e);
@@ -1249,7 +1278,7 @@ namespace FastReport
                 writer.WriteBool("WordWrap", WordWrap);
             if (Underlines != c.Underlines)
                 writer.WriteBool("Underlines", Underlines);
-            if (!Font.Equals(c.Font))
+            if (writer.SerializeTo != SerializeTo.Preview || !Font.Equals(c.Font))
                 writer.WriteValue("Font", Font);
             TextFill.Serialize(writer, "TextFill", c.TextFill);
             if (TextOutline != null)
@@ -1315,7 +1344,7 @@ namespace FastReport
         public override void Deserialize(FRReader reader)
         {
             base.Deserialize(reader);
-
+            TextFill.Deserialize(reader, "TextFill");
             if (reader.BlobStore != null)
             {
                 string indexes = reader.ReadStr("InlineImageCacheIndexes");
@@ -1337,6 +1366,51 @@ namespace FastReport
                     }
                 }
             }
+            switch (reader.DeserializeFrom)
+            {
+                case SerializeTo.Undo:
+                case SerializeTo.Preview:
+                case SerializeTo.Clipboard:
+                    // skip
+                    break;
+                default:
+                    if (!reader.HasProperty("Font"))
+                    {
+                        string creatorVersion = reader.Root.GetProp("ReportInfo.CreatorVersion");
+                        if (!String.IsNullOrEmpty(creatorVersion))
+                        {
+                            try
+                            {
+                                string[] versions = creatorVersion.Split('.');
+                                int major = 0;
+                                if (Int32.TryParse(versions[0], out major))
+                                {
+                                    if (major < 2016)
+                                    {
+                                        Font = new Font("Arial", 10);
+                                    }
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
+                    break;
+            }
+            
+        }
+        public override void InitializeComponent()
+        {
+            base.InitializeComponent();
+            TextFill.InitializeComponent();
+        }
+
+        public override void FinalizeComponent()
+        {
+            base.FinalizeComponent();
+            TextFill.FinalizeComponent();
         }
 
         internal void ApplyCondition(HighlightCondition c)
@@ -1458,7 +1532,8 @@ namespace FastReport
             {
                 try
                 {
-                    if ((bool)Report.Calc(condition.Expression, varValue) == true)
+                    object val = Report.Calc(condition.Expression, varValue);
+                    if (val != null && (bool)val == true)
                     {
                         ApplyCondition(condition);
                         break;
@@ -1553,13 +1628,7 @@ namespace FastReport
                                       );
 
 
-                                    if (left < 0
-                                      ||
-                                      top < 0
-                                      ||
-                                      width < runImage.Width
-                                      ||
-                                      height < runImage.Height)
+                                    if (left < 0 || top < 0 || width < runImage.Width || height < runImage.Height)
                                     {
                                         Bitmap bmp = new Bitmap((int)width, (int)height);
                                         using (Graphics g = Graphics.FromImage(bmp))

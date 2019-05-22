@@ -1,4 +1,6 @@
-# FastReport Open Source
+[![Gitter](https://badges.gitter.im/FastReports/FastReport.svg)](https://gitter.im/FastReports/FastReport?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/FastReports/FastReport.svg)](http://isitmaintained.com/project/FastReports/FastReport "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/FastReports/FastReport.svg)](http://isitmaintained.com/project/FastReports/FastReport "Percentage of issues still open") [![Coverity Scan Build Status](https://scan.coverity.com/projects/17221/badge.svg)](https://scan.coverity.com/projects/fastreport)
+
+[![FastReport Open Source](https://fastreports.github.io/FastReport.Documentation/images/fros-youtube-title.jpg)](https://youtu.be/Js78gl_xAOU)
 
 ## What is FastReport?
 
@@ -52,13 +54,13 @@ You can make a report template in several ways:
 
 - Using the FastReport Online Designer.
 
-- Using the FastReport Designer Community Edition (freeware). It can be downloaded from [Fast Report releases page](https://github.com/FastReports/FastReport/releases).
+- Using the FastReport Designer Community Edition (freeware). It can be downloaded from [FastReport releases page](https://github.com/FastReports/FastReport/releases).
 
 [![Image of FastReport](https://raw.githubusercontent.com/FastReports/FastReport.Documentation/master/images/FastReport-screenshot3-small.png)](https://raw.githubusercontent.com/FastReports/FastReport.Documentation/master/images/FastReport-screenshot3.png)
 
 ## Exporting
 
-FastReport Open Source can save documents in HTML, BMP, PNG, JPEG, GIF, TIFF, EMF.
+FastReport Open Source can save documents in HTML, BMP, PNG, JPEG, GIF, TIFF, EMF. PDF Export is available as a plugin.
 
 ## Installation
 

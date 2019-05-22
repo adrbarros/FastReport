@@ -192,19 +192,20 @@ namespace FastReport.Web
                         }
 
                         // Request call-back
-                        HttpWebResponse resp;
                         try
                         {
-                            resp = request.GetResponse() as HttpWebResponse;
-                            //context.Response.StatusCode = (int)resp.StatusCode;
-                            //context.Response.Write(resp.StatusDescription);
-
-                            result = new ContentResult()
+                            using (HttpWebResponse resp = request.GetResponse() as HttpWebResponse)
                             {
-                                StatusCode = (int)resp.StatusCode,
-                                ContentType = "text/html",
-                                Content = resp.StatusDescription,
-                            };
+                                //context.Response.StatusCode = (int)resp.StatusCode;
+                                //context.Response.Write(resp.StatusDescription);
+
+                                result = new ContentResult()
+                                {
+                                    StatusCode = (int)resp.StatusCode,
+                                    ContentType = "text/html",
+                                    Content = resp.StatusDescription,
+                                };
+                            }
                         }
                         catch (WebException err)
                         {
@@ -276,7 +277,7 @@ namespace FastReport.Web
                             string baseReportFile = xml.Root.GetProp("BaseReport");
                             //string fileName = context.Request.MapPath(baseReportFile, webReport.Prop.ReportPath, true);
                             if (!Path.IsPathRooted(baseReportFile))
-                                baseReportFile = Path.GetFullPath(Path.GetDirectoryName(ReportPath) + Path.DirectorySeparatorChar + baseReportFile);
+                                baseReportFile = Path.GetFullPath(Path.GetDirectoryName(Report.FileName) + Path.DirectorySeparatorChar + baseReportFile); //was ReportPath before(ToDo)
 
                             if (File.Exists(baseReportFile))
                             {
@@ -407,13 +408,17 @@ namespace FastReport.Web
 
                     // cut connection strings
                     var dictionary = xml.Root.FindItem("Dictionary");
-                    if (dictionary != null)
                     {
-                        for (int i = 0; i < dictionary.Items.Count; i++)
+                        if (dictionary != null)
                         {
-                            var item = dictionary.Items[i];
-                            if (!String.IsNullOrEmpty(item.GetProp("ConnectionString")))
-                                item.SetProp("ConnectionString", String.Empty);
+                            for (int i = 0; i < dictionary.Items.Count; i++)
+                            {
+                                var item = dictionary.Items[i];
+                                if (!String.IsNullOrEmpty(item.GetProp("ConnectionString")))
+                                {
+                                    item.SetProp("ConnectionString", String.Empty);
+                                }
+                            }
                         }
                     }
 
@@ -448,44 +453,42 @@ namespace FastReport.Web
                 if (!DesignScriptCode)
                 {
                     xml2.Root.SetProp("CodeRestricted", "");
-                    // clean received script
-                    var scriptItem2 = xml2.Root.FindItem("ScriptText");
-                    if (scriptItem2 != null)
-                        scriptItem2.Value = "";
                     // paste old script
                     var scriptItem1 = xml1.Root.FindItem("ScriptText");
-                    if (scriptItem1 != null)
+                    if (scriptItem1 != null && String.IsNullOrEmpty(scriptItem1.Value))
                     {
-                        if (String.IsNullOrEmpty(scriptItem1.Value))
+                        var scriptItem2 = xml2.Root.FindItem("ScriptText");
+                        if (scriptItem2 != null)
                         {
+                            scriptItem2.Value = scriptItem1.Value;
                             scriptItem2.Dispose();
-                            scriptItem2 = null;
                         }
                         else
-                        if (scriptItem2 != null)
-                            scriptItem2.Value = scriptItem1.Value;
-                        else
+                        {
                             xml2.Root.AddItem(scriptItem1);
+                        }
                     }
-
                 }
+
                 // paste saved connection strings
                 var dictionary1 = xml1.Root.FindItem("Dictionary");
                 var dictionary2 = xml2.Root.FindItem("Dictionary");
-                if (dictionary1 != null && dictionary2 != null)
-                {
-                    for (int i = 0; i < dictionary1.Items.Count; i++)
+                    if (dictionary1 != null && dictionary2 != null)
                     {
-                        var item1 = dictionary1.Items[i];
-                        string connectionString = item1.GetProp("ConnectionString");
-                        if (!String.IsNullOrEmpty(connectionString))
+                        for (int i = 0; i < dictionary1.Items.Count; i++)
                         {
-                            var item2 = dictionary2.FindItem(item1.Name);
-                            if (item2 != null)
-                                item2.SetProp("ConnectionString", connectionString);
+                            var item1 = dictionary1.Items[i];
+                            string connectionString = item1.GetProp("ConnectionString");
+                            if (!String.IsNullOrEmpty(connectionString))
+                            {
+                                var item2 = dictionary2.FindItem(item1.Name);
+                                if (item2 != null)
+                                {
+                                    item2.SetProp("ConnectionString", connectionString);
+                                }
+                            }
                         }
                     }
-                }
 
                 // save prepared xml
                 using (MemoryStream secondXmlStream = new MemoryStream())
@@ -496,6 +499,8 @@ namespace FastReport.Web
                     secondXmlStream.Read(buff, 0, buff.Length);
                     xmlString = Encoding.UTF8.GetString(buff);
                 }
+                xml1.Dispose();
+                xml2.Dispose();
             }
             return xmlString;
         }

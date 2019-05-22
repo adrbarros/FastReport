@@ -26,6 +26,7 @@
     <DelegateError Text="{0} delegate must have two arguments: 'sender' and 'e'"/>
     <DeleteAncestor Text="Could not delete {0}, it was introduced in the ancestor report"/>
     <DuplicateName Text="Object with name {0} already exists"/>
+    <GroupHeaderHasNoGroupCondition Text="{0} has no group condition"/>
     <DuplicateStyle Text="Style witch such name already exists"/>
     <Error Text="Error"/>
     <EventError Text="Could not create event handler due to errors in source code"/>
@@ -217,6 +218,7 @@
 	  </GaugeForms>
     </Gauge>
     <CrossViewObject Text="CrossView"/>
+    <DigitalSignatureObject Text="Digital signature"/>
   </Objects>
   <Functions>
     <Math Text="Mathematical"/>
@@ -281,6 +283,8 @@
     <JsonFile Text="JSON file (*.json,*.txt)|*.json;*.txt"/>
     <LaTeXFile Text="TeX file (*.tex)|*.tex"/>
     <ZplFile Text="ZPL file (*.zpl)|*.zpl"/>
+    <DxfFile Text="DXF file (*.dxf)|*.dxf"/>
+    <HpglFile Text="Hpgl(plt) file (*.plt)|*.plt"/>
     <AllFiles Text="All files (*.*)|*.*"/>
   </FileFilters>
   <Formats>
@@ -412,6 +416,8 @@
         <Save Text="Save Dictionary..."/>
         <Merge Text="Merge Dictionary..."/>
         <NewDataSource Text="New Data Source..."/>
+        <SortDataSources Text="Sort Data Sources"/>
+        <SortDataFields Text="Sort Data Fields"/>
         <NewRelation Text="New Relation..."/>
         <NewParameter Text="New Parameter"/>
         <NewTotal Text="New Total..."/>
@@ -632,6 +638,7 @@
       <Add Text="Add"/>
       <Reports Text="Report templates:"/>
       <ReportItems Text="Report items:"/>
+      <Games Text="Games:"/>
     </AddNewItem>
     <AdvancedConnectionProperties Text="Advanced Properties"/>
     <AskPassword Text="Password">
@@ -1033,6 +1040,14 @@
       <PathGradient Text="Path gradient"/>
       <Hatch Text="Hatch"/>
       <Glass Text="Glass"/>
+      <Texture Text="Texture"/>
+      <ChooseImage Text="Choose image" />
+      <PreserveAspectRatio Text="PreserveAspectRatio" />
+      <ImageSize Text="Image size" />
+      <ImageWidth Text="Width" />
+      <ImageHeight Text="Height" />
+      <WrapMode Text="Wrap Mode" />
+      <ImageOffset Text="Image offset" />
       <Colors Text="Colors"/>
       <Color Text="Color"/>
       <StartColor Text="Start"/>
@@ -1073,6 +1088,19 @@
       <FalseText Text="False value text:"/>
       <TrueText Text="True value text:"/>
     </FormatEditor>
+    <FontsPageOptions Text="Fonts setup">
+      <FormName Text="Fonts setup"/>
+      <Fonts Text="Fonts"/>
+      <Font Text="Font"/>
+      <SettingsFor Text="Show settings for"/>
+      <FormElement Text="Display items"/>
+      <DefaultButton Text="Use defaults"/>
+      <Size Text="Size"/>
+      <Italic Text="Italic"/>
+      <Bold Text="Bold"/>
+      <Sample Text="Sample"/>
+      <CancelButton Text="Cancel"/>
+    </FontsPageOptions>
     <GridControlColumnsEditor Text="Edit Columns">
       <Columns Text="Columns"/>
       <Properties Text="Properties"/>
@@ -1484,6 +1512,7 @@
       <Add Text="Add"/>
       <Remove Text="Remove"/>
       <Note Text="Note: changes made will take effect on FastReport restart."/>
+      <Fonts Text="Fonts"/>
     </PluginsOptions>
     <PreviewPageSetup>
       <Apply Text="Apply to all pages and rebuild report"/>
@@ -1525,6 +1554,8 @@
       <PagesOnSheet8 Text="8 pages"/>
       <Print Text="Print"/>
       <Error Text="Invalid page range."/>
+      <CmdCommand Text="Command" />
+      <CmdDescription Text="Replace 'report1.fpx report2.fpx ... reportN.fpx' with your own reports and copy the following command:" />
     </PrinterSetup>
     <QueryBuilder Text="Query Builder">
       <Designer Text="Designer"/>
@@ -1656,7 +1687,7 @@
       <Subscript Text="Subscript"/>
       <Superscript Text="Superscript"/>
       <Bullets Text="Bullets"/>
-      <Confirm Text="Text has been modified. Save changes?"/>
+      <ConfirmChanges Text="Text has been modified. Save changes?"/>
     </RichTextEditor>
     <SearchReplace Text="Find and Replace">
       <Find Text="Find what:"/>
@@ -1727,6 +1758,7 @@
     </Style>
     <TextEditor Text="Edit Text">
       <WordWrap Text="Word wrap"/>
+      <ConfirmChanges Text="Text has been modified. Save changes?"/>
     </TextEditor>
     <TotalEditor Text="Edit Total">
       <TotalName Text="Total name:"/>
@@ -1832,6 +1864,19 @@
       <Message Text="FastReport detected incorrect program shutdown, do you want to recover unsaved report?"/>
       <Restore Text="Restore"/>
     </LoadAutoSave>
+    <FastM1nesweeper Text="Fast M1nesweeper">
+      <Welcome Text="Create a new Fast M1nesweeper report game"/>
+      <Settings Text="Settings"/>
+      <Difficulty Text="Difficulty"/>
+      <Custom Text="Custom"/>
+      <Easy Text="Easy"/>
+      <Medium Text="Medium"/>
+      <Hard Text="Hard"/>
+      <Master Text="Master"/>
+      <Bombs Text="Bombs"/>
+      <Columns Text="Columns"/>
+      <Rows Text="Rows"/>
+    </FastM1nesweeper>
   </Forms>
   <ConnectionEditors>
     <Common>
@@ -1902,6 +1947,7 @@
       <CanShrink Text="Can Shrink"/>
       <GrowToBottom Text="Grow to Bottom"/>
       <Hyperlink Text="Hyperlink..."/>
+      <Style Text="Style"/>
     </ReportComponent>
     <BreakableComponent>
       <CanBreak Text="Can Break"/>
@@ -1942,6 +1988,7 @@
       <AutoWidth Text="Auto Width"/>
       <WordWrap Text="Word Wrap"/>
       <AllowExpressions Text="Allow Expressions"/>
+      <HideZeros Text="Hide Zeros"/>
     </TextObject>
     <SubreportObject>
       <PrintOnParent Text="Print on Parent"/>
@@ -2067,6 +2114,7 @@
     <NewDataSource Text="New Data Source"/>
     <NewPage Text="New Report Page"/>
     <NewDialog Text="New Dialog Form"/>
+    <FastM1nesweeper Text="Fast M1nesweeper"/>
   </Wizards>
   <Export>
     <Misc>
@@ -2117,6 +2165,9 @@
     </Image>
     <RichText Text="Export to Rich Text">
       <File Text="Rich Text file"/>
+      <RTFObjectAs Text="RTF object as" />
+      <Picture Text="Picture" />
+      <EmbeddedRTF Text="Embedded RTF" />
     </RichText>
     <Text Text="Export to Text/Matrix Printer">
       <File Text="Text File/Matrix Printer"/>
@@ -2149,6 +2200,8 @@
       <Unicode Text="Unicode"/>
       <OEM Text="OEM"/>
       <DataOnly Text="Data only"/>
+      <NoQuotes Text="Disable quotation marks"/>
+      <EscapeQuotes Text="Escape quotation marks"/>
     </Csv>
     <Dbf Text="Export to DBF">
       <File Text="DBF table"/>
@@ -2271,6 +2324,20 @@
         <Disabled Text="Disabled" />
         <SvgAsPicture Text="Svg as Picture" />
       </VectorGraphics>
+      <!-- Digital signature tab -->
+      <DigitalSignature Text="Digital signature">
+        <SignInformation Text="Sign Information"/>
+        <SignDocument Text="Sign document"/>
+        <Location Text="Location"/>
+        <Reason Text="Reason"/>
+        <ContactInfo Text="Contact info"/>
+        <CertificateInformation Text="Certificate Information"/>
+        <CertificatePath Text="Certificate path"/>
+        <CertificatePassword Text="Certificate password"/>
+        <CertificateSavePassword Text="Save password"/>
+        <CertificateSavePasswordWarning Text="Attention!!! Saving a password may be insecure!"/>
+        <ClickToChangeThePassword Text="Click to change password"/>
+      </DigitalSignature>
     </Pdf>
     <Html Text="Export to HTML">
       <File Text="HTML file"/>
@@ -2323,6 +2390,12 @@
       <SendingEmail Text="Sending email - {0} Kb"/>
       <EnableSSL Text="Enable SSL"/>
     </Email>
+    <Dxf Text="Export to DXF">
+      <File Text="DXF file"/>
+    </Dxf>
+    <Hpgl Text="Export to Hpgl(plt)">
+      <File Text="Hpgl file"/>
+    </Hpgl>
   </Export>
   <Cloud>
     <CloudStorage Text="Save to Cloud">

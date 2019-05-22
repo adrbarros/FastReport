@@ -98,7 +98,6 @@ namespace FastReport
     public abstract partial class ReportComponentBase : ComponentBase
     {
         #region Fields
-        private bool printable;
         private bool exportable;
         private Border border;
         private FillBase fill;
@@ -156,21 +155,6 @@ namespace FastReport
         /// This event occurs when the user clicks the object in the preview window.
         /// </summary>
         public event EventHandler Click;
-
-        /// <summary>
-        /// Gets or sets a value that determines if the object can be printed on the printer.
-        /// </summary>
-        /// <remarks>
-        /// Object with Printable = <b>false</b> is still visible in the preview window, but not on the prinout.
-        /// If you want to hide an object in the preview, set the <see cref="ComponentBase.Visible"/> property to <b>false</b>.
-        /// </remarks>
-        [DefaultValue(true)]
-        [Category("Behavior")]
-        public bool Printable
-        {
-            get { return printable; }
-            set { printable = value; }
-        }
 
         /// <summary>
         /// Gets or sets a value that determines if the object can be exported.
@@ -665,7 +649,6 @@ namespace FastReport
             base.Assign(source);
 
             ReportComponentBase src = source as ReportComponentBase;
-            Printable = src.Printable;
             Exportable = src.Exportable;
             Border = src.Border.Clone();
             Fill = src.Fill.Clone();
@@ -785,12 +768,11 @@ namespace FastReport
             ReportComponentBase c = writer.DiffObject as ReportComponentBase;
             base.Serialize(writer);
 
-            if (Printable != c.Printable)
-                writer.WriteBool("Printable", Printable);
             if (Exportable != c.Exportable)
                 writer.WriteBool("Exportable", Exportable);
             Border.Serialize(writer, "Border", c.Border);
-            Fill.Serialize(writer, "Fill", c.Fill);
+            //if(Fill != c.Fill)
+                Fill.Serialize(writer, "Fill", c.Fill);
             if (Cursor != c.Cursor && !Config.WebMode)
                 writer.WriteValue("Cursor", Cursor);
             Hyperlink.Serialize(writer, c.Hyperlink);
@@ -838,6 +820,16 @@ namespace FastReport
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        public override void Deserialize(FRReader reader)
+        {
+            base.Deserialize(reader);
+            Fill.Deserialize(reader, "Fill");
+        }
+
+        /// <summary>
         /// This method fires the <b>Click</b> event and the script code connected to the <b>ClickEvent</b>.
         /// </summary>
         /// <param name="e">Event data.</param>
@@ -875,6 +867,7 @@ namespace FastReport
         {
             // update the component's style
             Style = Style;
+            Fill.InitializeComponent();
         }
 
         /// <summary>
@@ -885,6 +878,7 @@ namespace FastReport
         /// </remarks>
         public virtual void FinalizeComponent()
         {
+            Fill.FinalizeComponent();
         }
 
         /// <summary>
@@ -1015,7 +1009,6 @@ namespace FastReport
             fill = new SolidFill();
             hyperlink = new Hyperlink(this);
             bookmark = "";
-            printable = true;
             exportable = true;
             flagUseFill = true;
             flagUseBorder = true;

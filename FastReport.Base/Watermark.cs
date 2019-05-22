@@ -71,7 +71,7 @@ namespace FastReport
     /// Watermark can draw text and/or image behind the page objects on in front of them. To enable
     /// watermark, set its <b>Enabled</b> property to <b>true</b>.
     /// </remarks>
-    [TypeConverterAttribute("FastReport.TypeConverters.FRExpandableObjectConverter, FastReport")]
+    [TypeConverter(typeof(FastReport.TypeConverters.FRExpandableObjectConverter))]
     [EditorAttribute("FastReport.TypeEditors.WatermarkEditor, FastReport", typeof(UITypeEditor))]
     public class Watermark : IDisposable
     {
@@ -202,10 +202,10 @@ namespace FastReport
         #endregion
 
         #region Private Methods
-        private bool ShouldSerializeFont()
-        {
-            return Font.Name != DrawUtils.DefaultReportFont.Name || Font.Size != 60 || Font.Style != FontStyle.Regular;
-        }
+        //private bool ShouldSerializeFont()
+        //{
+        //    return Font.Name != DrawUtils.DefaultReportFont.Name || Font.Size != 60 || Font.Style != FontStyle.Regular;
+        //}
 
         private bool ShouldSerializeTextFill()
         {
@@ -243,7 +243,14 @@ namespace FastReport
             pictureObject.DrawImage(e);
         }
 
-        internal void DrawText(FRPaintEventArgs e, RectangleF displayRect, Report report, bool isPrinting)
+        /// <summary>
+        /// Draws watermark text.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="displayRect"></param>
+        /// <param name="report"></param>
+        /// <param name="isPrinting"></param>
+        public void DrawText(FRPaintEventArgs e, RectangleF displayRect, Report report, bool isPrinting)
         {
             textObject.SetReport(report);
             textObject.Bounds = displayRect;
@@ -289,7 +296,7 @@ namespace FastReport
                 writer.WriteFloat(prefix + ".ImageTransparency", ImageTransparency);
             if (Text != c.Text)
                 writer.WriteStr(prefix + ".Text", Text);
-            if (!writer.AreEqual(Font, c.Font))
+            if (writer.SerializeTo != SerializeTo.Preview || !writer.AreEqual(Font, c.Font))
                 writer.WriteValue(prefix + ".Font", Font);
             TextFill.Serialize(writer, prefix + ".TextFill", c.TextFill);
             if (TextRotation != c.TextRotation)
