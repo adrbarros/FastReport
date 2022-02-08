@@ -18,12 +18,29 @@ namespace FastReport.Utils
         /// </summary>
         public List<ExportsTreeNode> ExportsMenu
         {
-            get { return menuNodes; }
+            get
+            {
+                RemoveCloudsAndMessengersDuplicatesInMenuNodes();
+                return menuNodes;
+            }
         }
 
         private ExportsOptions()
         {
             menuNodes = new List<ExportsTreeNode>();
+        }
+
+        private void RemoveCloudsAndMessengersDuplicatesInMenuNodes()
+        {
+            int last = menuNodes.Count - 1;
+            for (int i = last; i >= 0; i--)
+            {
+                ExportsTreeNode node = menuNodes[i];
+                if (node.Name == "Cloud" || node.Name == "Messengers")
+                {
+                    menuNodes.Remove(node);
+                }
+            }
         }
 
         /// <summary>
@@ -131,6 +148,14 @@ namespace FastReport.Utils
                 this.isExport = isExport;
             }
 
+            public ExportsTreeNode(string name, Type exportType, bool isExport, ObjectInfo tag)
+            {
+                this.name = name;
+                this.exportType = exportType;
+                this.isExport = isExport;
+                this.Tag = tag;
+            }
+
             public ExportsTreeNode(string name, int imageIndex, bool isExport)
             {
                 this.name = name;
@@ -144,6 +169,15 @@ namespace FastReport.Utils
                 this.exportType = exportType;
                 this.imageIndex = imageIndex;
                 this.isExport = isExport;
+            }
+
+            public ExportsTreeNode(string name, Type exportType, int imageIndex, bool isExport, ObjectInfo tag)
+            {
+                this.name = name;
+                this.exportType = exportType;
+                this.imageIndex = imageIndex;
+                this.isExport = isExport;
+                this.Tag = tag;
             }
 
             public ExportsTreeNode(string name, Type exportType, int imageIndex, bool enabled, bool isExport)
