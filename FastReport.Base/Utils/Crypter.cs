@@ -75,11 +75,8 @@ namespace FastReport.Utils
         rm.Padding = PaddingMode.ISO10126;
         decryptor = rm.CreateDecryptor(pdb.GetBytes(16), pdb.GetBytes(16));
       }
-      // check "rij" signature
-      int byte1 = source.ReadByte();
-      int byte2 = source.ReadByte();
-      int byte3 = source.ReadByte();
-      if (byte1 == 114 && byte2 == 105 && byte3 == 106)
+      var encrypted = IsStreamEncryptedPrivate(source);
+      if (encrypted)
         return new CryptoStream(source, decryptor, CryptoStreamMode.Read);
       source.Position -= 3;
       return null;
@@ -92,14 +89,20 @@ namespace FastReport.Utils
     /// <returns><b>true</b> if stream is crypted.</returns>
     public static bool IsStreamEncrypted(Stream stream)
     {
-      // check "rij" signature
-      int byte1 = stream.ReadByte();
-      int byte2 = stream.ReadByte();
-      int byte3 = stream.ReadByte();
+        var result = IsStreamEncryptedPrivate(stream);
       stream.Position -= 3;
-      return byte1 == 114 && byte2 == 105 && byte3 == 106;
+      return result;
     }
-    
+
+        private static bool IsStreamEncryptedPrivate(Stream stream)
+        {
+            // check "rij" signature
+            int byte1 = stream.ReadByte();
+            int byte2 = stream.ReadByte();
+            int byte3 = stream.ReadByte();
+            return byte1 == 114 && byte2 == 105 && byte3 == 106;
+        }
+
     /// <summary>
     /// Encrypts the string using the default password.
     /// </summary>
@@ -236,11 +239,11 @@ namespace FastReport.Utils
         /// </summary>
         [CLSCompliantAttribute(false)]
         public static ulong READ_SIZE = 16;
-        private static ulong C1 = 0x87c37b91114253d5L;
-        private static ulong C2 = 0x4cf5ad432745937fL;
+        private const ulong C1 = 0x87c37b91114253d5L;
+        private const ulong C2 = 0x4cf5ad432745937fL;
 
         private ulong length;
-        private uint seed = 0; // if want to start with a seed, create a constructor
+        private readonly uint seed = 0; // if want to start with a seed, create a constructor
         ulong h1;
         ulong h2;
 
@@ -311,7 +314,7 @@ namespace FastReport.Utils
             h1 = seed;
             this.length = 0L;
             int pos = 0;
-            int npos = 0;
+            int npos;
             ulong remaining = (ulong)bb.Length;
             // read 128 bits, 16 bytes, 2 longs in eacy cycle
 			while (remaining >= READ_SIZE) unchecked
