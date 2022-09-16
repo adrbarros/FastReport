@@ -14,6 +14,7 @@ namespace CakeScript
         bool IsRelease = false;
         bool IsProfessional = false;
         bool IsDebug = false;
+        bool IsTest = false;
 
         string config = Argument("config", "Debug");
         string solutionDirectory = Argument("solution-directory", "");
@@ -41,6 +42,9 @@ namespace CakeScript
 
         internal string SolutionFile => Path.Combine(solutionDirectory, solutionFilename);
 
+        string PackDir => Path.Combine(solutionDirectory, "Pack");
+
+
         public Program(string[] args)
         {
             
@@ -52,6 +56,7 @@ namespace CakeScript
             IsDemo = config.ToLower() == "demo";
             IsRelease = config.ToLower() == "release";
             IsProfessional = config.ToLower() == "professional";
+            IsTest = config.ToLower() == "test";
 
             Information($"CONFIG: {config}");
         }
