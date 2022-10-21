@@ -50,6 +50,7 @@
     <ParentError1 Text="Объект типа {0} не может содержать объекты"/>
     <Performance Text="Выполнено за {0} мс"/>
     <PreparingData Text="Подготовка данных..."/>
+    <LoadingReport Text="Загрузка отчета..."/>
     <PrintingPage Text="Печатается страница {0}"/>
     <RenameAncestor Text="Невозможно переименовать {0}, он определен в базовом отчете."/>
     <SaveChanges Text="Сохранить изменения в {0}?"/>
@@ -277,6 +278,7 @@
     <CrossViewObject Text="CrossView"/>
     <DigitalSignatureObject Text="Цифровая подпись"/>
     <FastBI Text="Диаграммы FastBI">
+      <Bubble Text="Диаграмма Bubble"/>
       <TreeMap Text="Диаграмма TreeMap"/>
       <Sunburst Text="Диаграмма Sunburst"/>
       <Icicle Text="Диаграмма Icicle"/>
@@ -298,6 +300,7 @@
         <IcicleDirection Text="Направление"/>
         <SunburstForm Text="Редактор диаграммы Sunburst"/>
         <IcicleForm Text="Редактор диаграммы Icicle"/>
+        <BubbleForm Text="Редактор диаграммы Bubble"/>
         <TreeMapForm Text="Редактор диаграммы TreeMap"/>
       </Appearance>
     </FastBI>
@@ -2299,6 +2302,7 @@
       <AnalyzeObjects Text="Анализ объектов"/>
       <SavePage Text="Сохранение страницы"/>
       <Wysiwyg Text="Wysiwyg"/>
+      <UseFileStream Text="Использовать файловый поток"/>
       <PageBreaks Text="Разрывы страниц"/>
       <OpenAfterExport Text="Открыть после экспорта"/>
       <Pictures Text="Картинки"/>
@@ -2434,6 +2438,7 @@
       <Other Text="Другие"/>
       <ShowGridLines Text="Показать линии сетки"/>
       <UseLocaleFormating Text="Использовать региональный формат данных"/>
+      <CurrencyToAccounting Text="Преобразовывать денежный формат в финансовый"/>
     </Xlsx>
     <Xls Text="Экспорт в Excel 97">
       <File Text="Excel 97 формат"/>
