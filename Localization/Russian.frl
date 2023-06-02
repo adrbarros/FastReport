@@ -71,6 +71,8 @@
     <FileNameEmpty Text="Пожалуйста, укажите имя файла."/>
     <SaveToAnotherFile Text="Хотите сохранить в другой файл?"/>
     <RemoveFromRecentFiles Text="Удалить файл из списка недавно открытых файлов?"/>
+    <ImageLoadException Text="Изображение повреждено или не установлен плагин поддерживающий этот формат"/>
+    <FRXPageError Text="Ошибка на странице FRX. Изменения были отменены."/>
     <Validator>
       <DuplicateName Text="Имя уже используется."/>
       <IntersectedObjects Text="Объект пересекается с другим объектом."/>
@@ -342,7 +344,7 @@
     <AccdbFile Text="База данных MS Access 2007 (*.accdb)|*.accdb"/>
     <MdfFile Text="База данных Microsoft SQL Server (*.mdf)|*.mdf"/>
     <RtfFile Text="Форматированный текст (*.rtf)|*.rtf"/>
-    <Images Text="Файлы картинок|*.bmp;*.png;*.jpg;*.jpeg;*.gif;*.tiff;*.tif;*.ico;*.emf;*.wmf"/>
+    <Images Text="Файлы картинок|*.bmp;*.png;*.jpg;*.jpeg;*.gif;*.tiff;*.tif;*.ico;*.emf;*.wmf;*.webp"/>
     <AllImages Text="Файлы картинок|*.bmp;*.png;*.jpg;*.jpeg;*.gif;*.tiff;*.tif;*.ico;*.emf;*.wmf;*.svg"/>
     <Assembly Text="Сборка (*.dll,*.exe)|*.dll;*.exe"/>
     <PrnFile Text="Файл печати (*.prn)|*.prn"/>
@@ -1229,11 +1231,10 @@
       <WhichTables Text="Какие таблицы вы хотите использовать в отчете?"/>
       <Wait Text="Подключение к базе данных"/>
       <AddQuery Text="Добавить SQL запрос..."/>
-      <CheckAll Text="Выбрать все"/>
       <CloudDataSources Text="Выбрать подключение с Облака"/>
-      <Page3 Text="Выберите процедуры"/>
-      <WhichProcedures Text="Какие процедуры вы хотите использовать в отчете?"/>
-      <CheckAllProcedures Text="Выбрать все процедуры без входных параметров"/>
+      <Tables Text="Таблицы"/>
+      <Procedures Text="Процедуры"/>
+      <Queries Text="Запросы"/>
       <MessageBox>
         <SuccessText Text="Источник данных успешно загружен на сервер!"/>
         <SuccessCaption Text="Загрузка успешна"/>
@@ -2724,6 +2725,7 @@
       <EmbPic Text="Встроенные картинки"/>
       <Total Text="Всего"/>
       <NotRotateLandscapePage Text="Не поворачивать альбомные страницы при печати"/>
+      <UsePageBreaks Text="Использовать разделители страниц"/>
       <First Text="&lt;&lt;"/>
       <Last Text="&gt;&gt;"/>
       <Prev Text="&lt;"/>
