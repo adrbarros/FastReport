@@ -20,25 +20,48 @@ namespace FastReport.Web.Controllers
         public sealed class ConnectionsParams
         {
             public string ConnectionType { get; set; }
+
             public string ConnectionString { get; set; }
         }
 
+        public sealed class ConnectionTablesRequestModel 
+        { 
+            public ConnectionsParams ConnectionsParams { get; set; }
+
+            public List<CustomViewModel> CustomViews { get; set; }
+        }
+
         [HttpGet("/designer.getConnectionTypes")]
-        public static IResult GetConnectionTypes(IConnectionsService connectionsService)
+        public static IResult GetConnectionTypes([FromQuery] string needSqlSupportInfo, IConnectionsService connectionsService)
         {
-            var response = connectionsService.GetConnectionTypes();
+            var isNeedSqlSupport = bool.TryParse(needSqlSupportInfo, out var parsedBool) && parsedBool;
+
+            var response = connectionsService.GetConnectionTypes(isNeedSqlSupport);
             var content = "{" + string.Join(",", response.ToArray()) + "}";
 
             return Results.Content(content, "application/json");
         }
 
+        [Obsolete]
         [HttpGet("/designer.getConnectionTables")]
         public static IResult GetConnectionTables([FromQuery] ConnectionsParams query,
             IConnectionsService connectionsService)
         {
+            var request = new ConnectionTablesRequestModel
+            {
+                ConnectionsParams = query,
+                CustomViews = new()
+            };
+
+            return GetConnectionTables(request, connectionsService);
+        }
+
+        [HttpPost("/designer.getConnectionTables")]
+        public static IResult GetConnectionTables([FromBody] ConnectionTablesRequestModel request, IConnectionsService connectionsService)
+        {
             try
             {
-                var response = connectionsService.GetConnectionTables(query.ConnectionType, query.ConnectionString);
+                var response = connectionsService.GetConnectionTables(request.ConnectionsParams.ConnectionType, request.ConnectionsParams.ConnectionString, request.CustomViews);
 
                 return Results.Content(response, "application/xml");
             }

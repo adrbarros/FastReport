@@ -1,10 +1,13 @@
 ﻿using FastReport.Data;
 using FastReport.Utils;
+using FastReport.Web.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -160,7 +163,7 @@ namespace FastReport.Web.Services
             }
         }
 
-        public string GetConnectionTables(string connectionType, string connectionString)
+        public string GetConnectionTables(string connectionType, string connectionString, List<CustomViewModel> customViews)
         {
             if (!IsConnectionStringValid(connectionString, out var errorMsg))
             {
@@ -187,8 +190,25 @@ namespace FastReport.Web.Services
                     using (var writer = new FRWriter())
                     {
                         conn.ConnectionString = connectionString;
-                        conn.CreateAllTables(true);
 
+                        if (FastReportGlobal.AllowCustomSqlQueries)
+                        {
+                            foreach (var view in customViews)
+                            {
+                                var source = new TableDataSource
+                                {
+                                    Table = new DataTable(),
+                                    TableName = view.TableName,
+                                    Name = view.TableName,
+                                    SelectCommand = view.SqlQuery
+                                };
+
+                                conn.Tables.Add(source);
+                                conn.DataSet.Tables.Add(source.Table);
+                            }
+                        }
+
+                        conn.CreateAllTables(true);
                         foreach (TableDataSource c in conn.Tables)
                             c.Enabled = true;
 
@@ -227,17 +247,33 @@ namespace FastReport.Web.Services
             return true;
         }
 
-        public List<string> GetConnectionTypes()
+        public List<string> GetConnectionTypes(bool needSqlSupportInfo = false)
         {
-            var names = new List<string>();
+            var result = new List<string>();
             var objects = new List<DataConnectionInfo>();
             RegisteredObjects.DataConnections.EnumItems(objects);
 
-            foreach (var info in objects)
-                if (info.Object != null)
-                    names.Add($@"""{info.Object.FullName}"":""{Res.TryGetBuiltin(info.Text)}""");
+            foreach (var info in objects.Where(info => info.Object != null))
+            {
+                string connection;
 
-            return names;
+                if (needSqlSupportInfo)
+                {
+                    using var conn = (DataConnectionBase)Activator.CreateInstance(info.Object);
+                    connection = $"\"{info.Object.FullName}\": {GetConnectionJson(info.Text, conn.IsSqlBased)}";
+                }
+                else connection = $"\"{info.Object.FullName}\": \"{Res.TryGetBuiltin(info.Text)}\"";
+
+                result.Add(connection);
+            }
+
+            return result;
         }
+
+        private static string GetConnectionJson(string text, bool isSqlBased)
+        {
+            return $"{{\"connectionType\": \"{Res.TryGetBuiltin(text)}\", \"sqlSupport\": {isSqlBased.ToString().ToLowerInvariant()}}}";
+        }
+
     }
 }
