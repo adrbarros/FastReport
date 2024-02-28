@@ -1889,6 +1889,7 @@
       <AddParameter Text="Add Parameter"/>
       <Delete Text="Delete"/>
       <DuplicateName Text="Item with such name already exists."/>
+      <DuplicateParamName Text="The query contains multiple occurrences of one or more parameters ({0}). Please ensure that each use of the parameter matches your expectations and does not cause a conflict during query execution."/>
     </QueryWizard>
     <RelationEditor Text="Edit Relation">
       <ParentTable Text="Parent table:"/>
@@ -2382,6 +2383,7 @@
       <File Text="Working with files"/>
       <Editing Text="Editing"/>
       <Help Text="Help"/>
+      <SelectAll Text="Select all"/>
       <Default Text="Default"/>
       <Info Text="To change the keyboard shortcut, you need to double-click on the desired one, or select and press Enter."/>
       <Command Text="Command"/>
