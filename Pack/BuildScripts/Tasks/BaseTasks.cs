@@ -36,6 +36,20 @@ partial class Program
       "Odbc",
     };
 
+    enum ProductType
+    {
+        None = 0,
+        Core,
+        Net,
+        OpenSource,
+        Mono,
+        WPF,
+        Avalonia,
+        Wasm,
+        Connector,
+        Localization,
+    }
+
     internal string SolutionFile => Path.Combine(solutionDirectory, solutionFilename);
 
     string PackDir => Path.Combine(solutionDirectory, "Pack");
@@ -205,4 +219,7 @@ partial class Program
         var additionDir = GetDirNameByProject(project);
         return Path.Combine(outdir, additionDir);
     }
+
+
+    partial void UseNugetLocalization(NuGetPackSettings settings, ProductType productType);
 }
