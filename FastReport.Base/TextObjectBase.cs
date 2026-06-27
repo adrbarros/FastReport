@@ -5,6 +5,10 @@ using FastReport.Format;
 using System.Windows.Forms;
 using System.Drawing.Design;
 
+#if FRCORE || FROPENSOURCE
+#pragma warning disable CS1574 // missing cref members in XML comments
+#endif
+
 namespace FastReport
 {
     /// <summary>
@@ -460,8 +464,18 @@ namespace FastReport
             }
             catch (Exception e)
             {
-                throw new Exception(Name + ": " + Res.Get("Messages,ErrorInExpression") + ": " + expression,
-                    e.InnerException == null ? e : e.InnerException);
+                switch (Config.CompilerSettings.ExceptionBehaviour)
+                {
+                    case CompilerExceptionBehaviour.ReplaceExpressionWithExceptionMessage:
+                        return e.InnerException == null ? e.Message : e.InnerException.Message;
+
+                    case CompilerExceptionBehaviour.ReplaceExpressionWithPlaceholder:
+                        return Config.CompilerSettings.Placeholder;
+
+                    default:
+                        throw new Exception(Name + ": " + Res.Get("Messages,ErrorInExpression") + ": " + expression,
+                            e.InnerException == null ? e : e.InnerException);
+                }
             }
         }
 

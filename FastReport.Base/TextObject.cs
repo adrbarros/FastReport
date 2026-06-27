@@ -177,6 +177,7 @@ namespace FastReport
             skipFirstLineIndent = p.skipFirstLineIndent;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             ParagraphFormat format = obj as ParagraphFormat;
@@ -187,6 +188,7 @@ namespace FastReport
                    skipFirstLineIndent == format.skipFirstLineIndent;
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked
@@ -1541,12 +1543,14 @@ namespace FastReport
             }
         }
 
+        /// <inheritdoc/>
         public override void InitializeComponent()
         {
             base.InitializeComponent();
             TextFill.InitializeComponent();
         }
 
+        /// <inheritdoc/>
         public override void FinalizeComponent()
         {
             base.FinalizeComponent();
@@ -1686,7 +1690,20 @@ namespace FastReport
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(Name + ": " + Res.Get("Messages,ErrorInHighlightCondition") + ": " + condition.Expression, e.InnerException);
+                    switch (Config.CompilerSettings.ExceptionBehaviour)
+                    {
+                        case CompilerExceptionBehaviour.ReplaceExpressionWithExceptionMessage:
+                            var message = e.InnerException == null ? e.Message : e.InnerException.Message;
+                            Text = $"{Res.Get("Messages,ErrorInHighlightCondition")}: {condition.Expression} {message}";
+                            break;
+
+                        case CompilerExceptionBehaviour.ReplaceExpressionWithPlaceholder:
+                            Text = Config.CompilerSettings.Placeholder;
+                            break;
+
+                        default:
+                            throw new Exception(Name + ": " + Res.Get("Messages,ErrorInHighlightCondition") + ": " + condition.Expression, e.InnerException);
+                    }
                 }
             }
 

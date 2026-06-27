@@ -346,6 +346,20 @@ namespace FastReport.Web
                                                     break;
                                                 }
                                             }
+                                            else if (textcell.FindObject(objectName) is ReportComponentBase innerObj)
+                                            {
+                                                System.Drawing.RectangleF rect =
+                                                    new System.Drawing.RectangleF(table.Columns[j].AbsLeft + innerObj.Left,
+                                                    table.Rows[i].AbsTop + innerObj.Top,
+                                                    innerObj.Width,
+                                                    innerObj.Height);
+                                                if (rect.Contains(point))
+                                                {
+                                                    Click(innerObj, page, pageN);
+                                                    found = true;
+                                                    break;
+                                                }
+                                            }
                                         }
                                         if (found)
                                             break;
@@ -418,7 +432,17 @@ namespace FastReport.Web
                         PreparedPages pages = new PreparedPages(currentReport);                       
                         currentReport.SetPreparedPages(pages);
                         currentReport.PreparePage(reportPage, true);
-                        param.AssignAll(param2);
+ 
+                        foreach (Data.Parameter childParam in param2.ChildObjects)
+                        {
+                            var p = param.FindObject(childParam.Name) as Data.Parameter;
+                            if (p != null)
+                            {
+                                p.Value = childParam.Value;
+                                p.Expression = childParam.Expression;
+                            }
+                        }
+
                         Report tabReport = new Report();
                         tabReport.SetPreparedPages(currentReport.PreparedPages);
                         Tabs.Add(new ReportTab()
